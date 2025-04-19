@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import Snackbar from '@mui/material/Snackbar';
+import MuiAlert from '@mui/material/Alert';
 import {
   Box,
   Paper,
@@ -47,6 +49,8 @@ const LEARNING_STYLES = [
 ];
 
 const StudyPlanGenerator = ({ content, onClose, onSavePlan, studyPlanHistory = [], onUpdateProgress = () => {}, studyPlan: initialStudyPlan = null }) => {
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+
   console.log('StudyPlanGenerator received initialStudyPlan:', initialStudyPlan);
   const theme = useTheme();
   // If initialStudyPlan is provided, start at step 2 (plan display)
@@ -514,73 +518,87 @@ const StudyPlanGenerator = ({ content, onClose, onSavePlan, studyPlanHistory = [
   };
   
   return (
-    <Paper elevation={3} sx={{ p: 3, borderRadius: 2 }}>
-      <Typography variant="h4" gutterBottom align="center" sx={{ mb: 4, color: '#1565C0', fontWeight: 500 }}>
-        Create Personalized Training Plan
-      </Typography>
-      
-      <Stepper activeStep={activeStep} sx={{ mb: 4 }}>
-        <Step>
-          <StepLabel>Set Preferences</StepLabel>
-        </Step>
-        <Step>
-          <StepLabel>Generate Plan</StepLabel>
-        </Step>
-        <Step>
-          <StepLabel>View Plan</StepLabel>
-        </Step>
-      </Stepper>
-      
-      {getStepContent(activeStep)}
-      
-      <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 3 }}>
-        {activeStep !== 1 && (
-          <>
-            {activeStep !== 0 && (
-              <Button onClick={handleBack} sx={{ mr: 1 }}>
-                Back
-              </Button>
-            )}
-            
-            {activeStep === 0 && (
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={handleGeneratePlan}
-                disabled={loading}
-              >
-                Generate Training Plan
-              </Button>
-            )}
-            
-            {activeStep === 2 && (
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={() => {
-                  // Save the current study plan to history before closing
-                  if (studyPlan) {
-                    // Add timestamp and title for history identification
-                    const planWithMeta = {
-                      ...studyPlan,
-                      timestamp: new Date().toISOString(),
-                      title: `Training Plan (${format(new Date(), 'MMM d, yyyy')})`
-                    };
-                    onSavePlan(planWithMeta);
-                  }
-                  // Reset to preferences step without closing
-                  setActiveStep(0);
-                  // Clear the current study plan to start fresh
-                  setStudyPlan(null);
-                }}
-              >
-                Done
-              </Button>
-            )}
-          </>
-        )}
-      </Box>
-    </Paper>
+    <>
+      <Paper elevation={3} sx={{ p: 3, borderRadius: 2 }}>
+        <Typography variant="h4" gutterBottom align="center" sx={{ mb: 4, color: '#1565C0', fontWeight: 500 }}>
+          Create Personalized Training Plan
+        </Typography>
+        
+        <Stepper activeStep={activeStep} sx={{ mb: 4 }}>
+          <Step>
+            <StepLabel>Set Preferences</StepLabel>
+          </Step>
+          <Step>
+            <StepLabel>Generate Plan</StepLabel>
+          </Step>
+          <Step>
+            <StepLabel>View Plan</StepLabel>
+          </Step>
+        </Stepper>
+        
+        {getStepContent(activeStep)}
+        
+        <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 3 }}>
+          {activeStep !== 1 && (
+            <>
+              {activeStep !== 0 && (
+                <Button onClick={handleBack} sx={{ mr: 1 }}>
+                  Back
+                </Button>
+              )}
+              
+              {activeStep === 0 && (
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={handleGeneratePlan}
+                  disabled={loading}
+                >
+                  Generate Training Plan
+                </Button>
+              )}
+              
+              {activeStep === 2 && (
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={() => {
+                    // Save the current study plan to history before closing
+                    if (studyPlan) {
+                      // Add timestamp and title for history identification
+                      const planWithMeta = {
+                        ...studyPlan,
+                        timestamp: new Date().toISOString(),
+                        title: `Training Plan (${format(new Date(), 'MMM d, yyyy')})`
+                      };
+                      onSavePlan(planWithMeta);
+                    }
+                    // Show snackbar
+                    setSnackbarOpen(true);
+                    // Reset to preferences step without closing
+                    setActiveStep(0);
+                    // Clear the current study plan to start fresh
+                    setStudyPlan(null);
+                  }}
+                >
+                  Save
+                </Button>
+              )}
+            </>
+          )}
+        </Box>
+      </Paper>
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={3000}
+        onClose={() => setSnackbarOpen(false)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <MuiAlert onClose={() => setSnackbarOpen(false)} severity="success" sx={{ width: '100%' }} elevation={6} variant="filled">
+          Training plan has been saved
+        </MuiAlert>
+      </Snackbar>
+    </>
   );
 };
 
